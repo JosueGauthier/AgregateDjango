@@ -9,7 +9,6 @@ class BookSerializer(serializers.HyperlinkedModelSerializer):
         model = Book
         fields = ['name', 'pages','total_amount']
 
-
     def get_total_amount(self, obj):
         return obj.get_total()
 
@@ -17,6 +16,46 @@ class BookSerializer(serializers.HyperlinkedModelSerializer):
 class BookViewSet(viewsets.ModelViewSet):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
+
+
+
+""" class BookStatSerializer(serializers.HyperlinkedModelSerializer):
+    total_amount = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = Book
+        fields = ['total_amount']
+
+    def get_total_amount(self, obj):
+        return obj.get_total() """
+
+class BookStatSerializer(serializers.Serializer):
+    total_amount = serializers.SerializerMethodField(read_only=True)
+
+    def get_total_amount(self):
+        return Book.get_total()
+
+
+from rest_framework.response import Response
+
+
+""" class BookStatViewSet(viewsets.ViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookStatSerializer 
+
+    def list(self, request, *args, **kwargs):
+        queryset = Book.objects.all()
+        serializer = BookStatSerializer
+        return Response(serializer.data) """
+        
+
+
+
+
+
+""" class BookStatViewSet(viewsets.ModelViewSet):
+    queryset = Book.objects.all()
+    serializer_class = BookStatSerializer """
 
 
 import json
@@ -35,40 +74,22 @@ def api_total(request, *args, **kwargs):
 
 from django.db.models import Avg
 def get_total(request, *args, **kwargs):
-    model_data = Book.objects.all().order_by("?").first()
-    data = {}
+    #model_data = Book.objects.all().order_by("?").first()
+    #data = {}
+
+    data = []
+    data.append(Book.objects.all().aggregate(Avg('price')))
     
-    data['total-amount'] = Book.objects.all().aggregate(Avg('price'))
+    #data['total-amount'] = Book.objects.all().aggregate(Avg('price'))
     #data['pages'] = model_data.pages
         
-    return JsonResponse(data)
+    return JsonResponse(data, safe=False)
 
-""" 
-def get_total_salary(self, obj):
-        user = self.context['request'].user.staffs.full_name
-        totalsalary = VaPayroll.objects.filter(Q(status='APPROVED-BY-THE-MANAGER'),
-            Q(virtual_assistant=user),
-            Q(date__month=datetime.date.today().month),
-        Q(date__year=datetime.date.today().year)).aggregate(total_salary=Sum('salary'))
 
-        return totalsalary['total_salary']
-        
- """
-# Routers provide an easy way of automatically determining the URL conf.
-""" router = routers.DefaultRouter()
-router.register(r'book', BookViewSet)
-
-# Wire up our API using automatic URL routing.
-# Additionally, we include login URLs for the browsable API.
-urlpatterns = [
-    path('', include(router.urls)),
-    path('api-book/', include('rest_framework.urls', namespace='rest_framework'))
-]
-"""
 
 router = routers.DefaultRouter()
 router.register(r'book', BookViewSet)
-
+#router.register(r'stat', BookStatViewSet)
 
 urlpatterns = [
     path('total/', get_total), # localhost:8000/api/
