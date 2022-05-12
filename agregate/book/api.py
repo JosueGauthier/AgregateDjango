@@ -72,13 +72,17 @@ def api_total(request, *args, **kwargs):
     return JsonResponse(data)
 
 
-from django.db.models import Avg
+from django.db.models import Avg, Max,Min,Sum, Count
 def get_total(request, *args, **kwargs):
     #model_data = Book.objects.all().order_by("?").first()
     #data = {}
 
     data = []
-    data.append(Book.objects.all().aggregate(Avg('price')))
+    data.append(Book.objects.all().aggregate(Avg('price'),Min('price'),Max('price'),Sum('price'),Count('price')))
+    data.append(Book.objects.count())
+    #data.append(Book.objects.all().aggregate(Avg('price'),Min('price'),Max('price')))
+
+    #data.append(Book.objects.all().aggregate(Avg('price')))
     
     #data['total-amount'] = Book.objects.all().aggregate(Avg('price'))
     #data['pages'] = model_data.pages
